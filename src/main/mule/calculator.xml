@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0e08f160-1705-4505-a299-9fd8c571f93b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="calculator-main-flow" doc:id="93da1015-1eb0-4bbb-b071-763fd2619e54" >
+		<http:listener doc:name="/calculate (GET)" doc:id="4eff172f-6dfa-414a-b48f-8dab68a3b366" config-ref="HTTP_Listener_config" path="/calculate"/>
+		<logger level="INFO" doc:name="START FLOW" doc:id="e630698f-0d1a-469d-8a2e-e9b1276dd72a" message="START FLOW"/>
+		<set-variable value="#[attributes.queryParams.num1]" doc:name="Set num1 Variable" doc:id="85fdd471-9ad8-4e72-8bc2-50b149aa7a95" variableName="num1"/>
+		<set-variable value="#[attributes.queryParams.num2]" doc:name="Set num2 Variable" doc:id="359b0b5a-ec3c-4a3a-94fb-5be60ee992ed" variableName="num2"/>
+		<set-variable value='#[attributes.queryParams.opp]' doc:name="Set operation Variable" doc:id="7f7b039f-b006-4c6c-b90a-8c961282fcae" variableName="operation"/>
+		<choice doc:name="Choice" doc:id="cbd183b2-331a-4a3b-9095-4e7087ea5d3c" >
+			<when expression='#[vars.operation == "add"]'>
+				<ee:transform doc:name="Add Response" doc:id="0143315f-510f-4b4a-ab44-22e7bafe6d58" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"number1": vars.num1,
+	"number2": vars.num2,
+	"operation": vars.operation,
+	"result": vars.num1 as Number + vars.num2 as Number
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.operation == "sub"]'>
+				<ee:transform doc:name="Sub Response" doc:id="676d1ce6-d451-4878-beaa-7d57f2a113ed" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"number1": vars.num1,
+	"number2": vars.num2,
+	"operation": vars.operation,
+	"result": vars.num1 as Number - vars.num2 as Number
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.operation == "mul"]'>
+				<ee:transform doc:name="Mul Response" doc:id="287a1269-cb9a-4514-876d-d955d83238a5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"number1": vars.num1,
+	"number2": vars.num2,
+	"operation": vars.operation,
+	"result": vars.num1 as Number * vars.num2 as Number
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.operation == "div"]'>
+				<ee:transform doc:name="Div Response" doc:id="d586044a-b12e-4420-8116-4eac59216fe0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"number1": vars.num1,
+	"number2": vars.num2,
+	"operation": vars.operation,
+	"result": vars.num1 as Number / vars.num2 as Number
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Default Response" doc:id="54c23d17-e42a-4763-b47a-d1a767535bc3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{   
+    "number1": vars.num1,
+	"number2": vars.num2,
+	"operation": vars.operation,
+	"message": "Operation is not Supported"
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="END FLOW" doc:id="5e40be1f-fd3a-4ca2-a747-9437ba2d33d9" message="END FLOW"/>
+	</flow>
+</mule>
